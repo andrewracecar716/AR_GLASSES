@@ -23,7 +23,16 @@ main_height = SCREEN_Y               # 64
 CHOSEN_COLOR = FEMBOY_PINK
 screen = pygame.display.set_mode((main_width, main_height))
 pygame.display.set_caption("PROTOTYPE")
+sprites = []
+num_spritess = 0
+def load_sprite(path):
+    temp_sprite = pygame.image.load(path).convert_alpha()
+    num_spritess += 1
+    sprites.append(temp_sprite)
 
+    #No terminal for glasses
+    #there is no fail!
+        
 # Two completely separate surfaces (your "eyes")
 left_eye_surface  = pygame.Surface((LSCREEN_X, SCREEN_Y))
 right_eye_surface = pygame.Surface((RSCREEN_X, SCREEN_Y))
@@ -33,18 +42,51 @@ font = pygame.font.SysFont("consolas", 8, bold=True)
 
 running = True
 
-def bar(float temp):
-    pyxels = 60
-    #bar mins and max are temp+20 for simplicity
-    rock = temp + 20
-    num_bars = int((60/140)*rock)
+def get_temp_bar_infill(temp: float):
+    """Returns 0–60 pixels to fill from the BOTTOM up. Perfect for -20°C → 120°C."""
+    MIN_TEMP = -20.0
 
-    bar_min = 0
-    bar_max = 140
+    MAX_TEMP = 120.0
 
-    return num_bars
+    clamped = max(MIN_TEMP, min(MAX_TEMP, temp))
+    fill_ratio = (clamped - MIN_TEMP) / (MAX_TEMP - MIN_TEMP)
+
+    return int(fill_ratio * 60)
+
+def draw_temp_bar(surface, temp: float, base_x: int = 92, base_y: int = 2):
+    surface.blit(sprites[0], (base_x, base_y))
+
+    fill_px = get_temp_bar_infill(temp)
+    if fill_px <= 0:
+        
+        pass
 
     
+    INNER_LEFT   = 4      # left edge of the empty interior
+    INNER_TOP    = 8      # top edge of the empty interior (after the 120 label)
+    INNER_WIDTH  = 22     # width of the fill zone (your two-column area)
+    INNER_MAX_H  = 60     # exactly the 60 pyxels you said are available
+
+    fill_rect = pygame.Rect(
+        base_x + INNER_LEFT,
+        base_y + INNER_TOP + INNER_MAX_H - fill_px,
+        INNER_WIDTH,
+        fill_px
+    )
+    pygame.draw.rect(surface, CHOSEN_COLOR, fill_rect)   # hot FEMBOY_PINK infill
+
+    temp_text = font.render(f"{temp:.0f}°C", True, CHOSEN_COLOR)
+    surface.blit(temp_text, (base_x + 2, base_y + INNER_TOP + INNER_MAX_H + 5))
+def get_temp():
+    #will be implemented with temp sensor soon! until then its sunny and 75 degrees!
+    return 75
+def get_compass_angle():
+    #will return north for now(90)
+    return 90
+
+def init():
+    load_sprite("/SPRITES/TEMP_BAR.ase") # 1
+    draw_temp_bar(right_eye_surface,get_temp(),64,0)
 
 while running:
     for event in pygame.event.get():
@@ -69,6 +111,10 @@ while running:
     pygame.draw.line(screen, (90, 90, 90), (128, 0), (128, 64), 4)
 
     pygame.display.flip()
+    init()
+
+
+
 
 pygame.quit()
 sys.exit()
