@@ -83,7 +83,7 @@ def get_temp():
 def get_compass_angle():
     #will return north for now(90)
     return 90
-
+    
 def init():
     load_sprite("/SPRITES/TEMP_BAR.ase") # 1
     draw_temp_bar(right_eye_surface,get_temp(),64,0)
